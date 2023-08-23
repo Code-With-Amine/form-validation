@@ -1,109 +1,92 @@
 "use client";
-import { useEffect, useState, ChangeEvent, FormEvent } from "react";
-import './style/style.css'
+import React from "react";
+import { Formik, Field, Form, ErrorMessage } from "formik";
+import * as Yup from "yup";
+import "./style/style.css";
 
 const Home = () => {
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+  const validationSchema = Yup.object().shape({
+    firstName: Yup.string()
+      .min(15, "Must be at least 15 characters")
+      .max(60, "Must be at most 60 characters")
+      .required("Required"),
+    lastName: Yup.string()
+      .max(20, "Must be at most 20 characters")
+      .required("Required"),
+    email: Yup.string()
+      .email("Invalid email format")
+      .required("Required"),
   });
 
-  const style = {
-    width: '50vw',
-    height: '100vh',
-    margin: '120px auto',
-    padding: '62px 20px'
-  }
-
-  const [errors, setErrors] = useState({
+  const initialValues = {
     firstName: "",
     lastName: "",
-  });
-
-  useEffect(() => {
-    // Check client-side and perform client-specific actions here
-  }, []);
-
-  const validateForm = () => {
-    let valid = true;
-    const newErrors = { ...errors };
-
-    if (formData.firstName.length < 1) {
-      newErrors.firstName = "First name is required";
-      valid = false;
-    } else if (formData.firstName.length > 20) {
-      newErrors.firstName = "Must be 20 characters or less";
-      valid = false;
-    } else {
-      newErrors.firstName = "";
-    }
-
-    if (formData.lastName.length < 15) {
-      newErrors.lastName = "Must be at least 15 characters";
-      valid = false;
-    } else if (formData.lastName.length > 60) {
-      newErrors.lastName = "Must be 60 characters or less";
-      valid = false;
-    } else {
-      newErrors.lastName = "";
-    }
-
-    setErrors(newErrors);
-    return valid;
+    email: "",
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (validateForm()) {
-      console.log("Form submitted:", formData);
-    }
+  const handleSubmit = (values: any) => {
+    console.log("submitted successfully", values);
   };
 
-  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+  const handleCharacterCount = (value: string) => {
+    return `${value.length}`;
   };
 
   return (
-    <div className="Form-container" style={style}>
-      <h1>Form Validation</h1>
-      <form onSubmit={handleSubmit}>
+    <Formik
+      initialValues={initialValues}
+      onSubmit={handleSubmit}
+      validationSchema={validationSchema}
+    >
+      <Form className="form">
         <div>
           <label htmlFor="firstName">First Name</label>
-          <input
-            type="text"
-            id="firstName"
-            name="firstName"
-            value={formData.firstName}
-            onChange={handleInputChange}
-            spellCheck
-          />
-          <div className="error">{errors.firstName}</div>
-          <div className="character-count">
-            Character Count: {formData.firstName.length}/20
-          </div>
+          <Field type="text" id="firstName" name="firstName">
+            {({ field }) => (
+              <>
+                <input {...field} />
+                <div className="character-count">
+                  {handleCharacterCount(field.value)}
+                </div>
+              </>
+            )}
+          </Field>
+          <ErrorMessage name="firstName" component="div" className="error" />
         </div>
+
         <div>
           <label htmlFor="lastName">Last Name</label>
-          <input
-            type="text"
-            id="lastName"
-            name="lastName"
-            value={formData.lastName}
-            onChange={handleInputChange}
-            spellCheck
-          />
-          <div className="error">{errors.lastName}</div>
-          <div className="character-count">
-            Character Count: {formData.lastName.length}/60
-          </div>
+          <Field type="text" id="lastName" name="lastName">
+            {({ field }) => (
+              <>
+                <input {...field} />
+                <div className="character-count">
+                  {handleCharacterCount(field.value)}
+                </div>
+              </>
+            )}
+          </Field>
+          <ErrorMessage name="lastName" component="div" className="error" />
         </div>
+
+        <div>
+          <label htmlFor="email">Email</label>
+          <Field type="email" id="email" name="email">
+            {({ field}) => (
+              <>
+                <input {...field} />
+                <div className="character-count">
+                  {handleCharacterCount(field.value)}
+                </div>
+              </>
+            )}
+          </Field>
+          <ErrorMessage name="email" component="div" className="error" />
+        </div>
+
         <button type="submit">Submit</button>
-      </form>
-    </div>
+      </Form>
+    </Formik>
   );
 };
 
